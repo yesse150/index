@@ -1,0 +1,299 @@
+/* =========================================================
+   Malla interactiva – MEDICINA VETERINARIA UDALBA
+   - Click: marca/aprueba (verde)
+   - Desbloqueo por requisitos
+   - Persistencia en localStorage
+   ========================================================= */
+
+const STORAGE_KEY = "malla_udAlba_aprobadas_v1";
+
+/* ---------- Definición de la malla y requisitos ----------
+   Nota: “abre X” significa que X pide como requisito este ramo.
+   En el objeto de abajo definimos cada curso con sus requisitos explícitos.
+   Cuando varios ramos “abren” uno, se piden todos (AND).
+----------------------------------------------------------- */
+
+const PLAN = [
+  {
+    year: "Primer año",
+    semesters: [
+      {
+        name: "1° semestre",
+        courses: [
+          { id: "quimica-general", name: "Química general", prereq: [] },
+          { id: "biologia", name: "Biología", prereq: [] },
+          { id: "zoologia", name: "Zoología", prereq: [] },
+          { id: "intro-med-vet", name: "Introducción a la medicina veterinaria", prereq: [] },
+          { id: "tecnologia-innovacion", name: "Tecnología e innovación", prereq: [] },
+          { id: "practica-i", name: "Práctica I", prereq: [] },
+        ],
+      },
+      {
+        name: "2° semestre",
+        courses: [
+          { id: "quimica-organica-bioquimica", name: "Química orgánica y bioquímica", prereq: ["quimica-general"] },
+          { id: "histologia-embriologia", name: "Histología y embriología", prereq: ["biologia"] },
+          { id: "estadistica", name: "Estadística", prereq: [] },
+          { id: "ecologia", name: "Ecología", prereq: ["zoologia"] },
+          { id: "ingles-basico", name: "Inglés básico", prereq: [] },
+          { id: "practica-ii", name: "Práctica II", prereq: ["practica-i"] },
+        ],
+      },
+    ],
+  },
+
+  {
+    year: "Segundo año",
+    semesters: [
+      {
+        name: "3° semestre",
+        courses: [
+          { id: "anatomia-i", name: "Anatomía I", prereq: ["histologia-embriologia"] },
+          { id: "fisiologia-veterinaria", name: "Fisiología veterinaria", prereq: ["histologia-embriologia"] },
+          { id: "etologia-bienestar", name: "Etología y bienestar animal", prereq: [] },
+          { id: "gestion-ambiental-conservacion", name: "Gestión ambiental y conservación", prereq: ["ecologia"] },
+          { id: "practica-iii", name: "Práctica III", prereq: ["practica-ii"] },
+        ],
+      },
+      {
+        name: "4° semestre",
+        courses: [
+          { id: "anatomia-ii", name: "Anatomía II", prereq: ["anatomia-i"] },
+          { id: "fisiologia-especial", name: "Fisiología especial", prereq: ["fisiologia-veterinaria"] },
+          { id: "interaccion-hospedero-patogeno", name: "Interacción hospedero patógeno", prereq: ["fisiologia-veterinaria"] },
+          { id: "mod-integrador-ciclo-inicial", name: "Módulo integrador ciclo inicial", prereq: ["etologia-bienestar", "gestion-ambiental-conservacion", "practica-iii"] },
+          { id: "principios-eticos-veterinarios", name: "Principios éticos veterinarios", prereq: [] },
+          { id: "genetica-pecuaria", name: "Genética pecuaria", prereq: [] },
+        ],
+      },
+    ],
+  },
+
+  {
+    year: "Tercer año",
+    semesters: [
+      {
+        name: "5° semestre",
+        courses: [
+          { id: "alimentacion-nutricion-animal", name: "Alimentación y nutrición animal", prereq: ["fisiologia-especial"] },
+          { id: "patologia-funcional", name: "Patología funcional", prereq: ["fisiologia-especial"] },
+          { id: "inspeccion-control-alimentos", name: "Inspección y control de alimentos", prereq: ["interaccion-hospedero-patogeno"] },
+          { id: "epidemiologia", name: "Epidemiología", prereq: ["interaccion-hospedero-patogeno"] },
+          { id: "desarrollo-sostenible", name: "Desarrollo sostenible", prereq: [] },
+          { id: "practica-iv", name: "Práctica IV", prereq: ["mod-integrador-ciclo-inicial"] },
+        ],
+      },
+      {
+        name: "6° semestre",
+        courses: [
+          { id: "farmacologia-terapeutica", name: "Farmacología y terapéutica", prereq: [] },
+          { id: "semiologia", name: "Semiología", prereq: [] },
+          { id: "hematologia-lab-clinico", name: "Hematología y laboratorio clínico", prereq: ["fisiologia-especial"] },
+          { id: "patologia-especial", name: "Patología especial", prereq: ["patologia-funcional"] },
+          { id: "ingles-tecnico", name: "Inglés técnico", prereq: [] },
+          { id: "practica-v", name: "Práctica V", prereq: ["practica-iv"] },
+        ],
+      },
+    ],
+  },
+
+  {
+    year: "Cuarto año",
+    semesters: [
+      {
+        name: "7° semestre",
+        courses: [
+          { id: "produccion-animal-i", name: "Producción animal I", prereq: ["alimentacion-nutricion-animal"] },
+          { id: "enfermedades-infecciosas-parasitarias", name: "Enfermedades infecciosas y parasitarias", prereq: ["patologia-especial"] },
+          { id: "ginecologia-obstetricia", name: "Ginecología y obstetricia", prereq: ["semiologia"] },
+          { id: "metodologia-investigacion", name: "Metodología de la investigación", prereq: [] },
+          { id: "responsabilidad-social-emprendimiento", name: "Responsabilidad social y emprendimiento", prereq: [] },
+          { id: "practica-vi", name: "Práctica VI", prereq: ["practica-v"] },
+        ],
+      },
+      {
+        name: "8° semestre",
+        courses: [
+          { id: "produccion-animal-ii", name: "Producción animal II", prereq: ["produccion-animal-i"] },
+          { id: "medicina-interna", name: "Medicina interna", prereq: ["enfermedades-infecciosas-parasitarias"] },
+          { id: "cirugia-general", name: "Cirugía General", prereq: ["farmacologia-terapeutica"] },
+          { id: "salud-publica", name: "Salud pública", prereq: ["epidemiologia"] },
+          { id: "mod-integrador-ciclo-intermedio", name: "Módulo integrador ciclo intermedio", prereq: ["produccion-animal-i", "practica-vi"] },
+          { id: "preparacion-vida-laboral", name: "Preparación para la vida laboral", prereq: [] },
+        ],
+      },
+    ],
+  },
+
+  {
+    year: "Quinto año",
+    semesters: [
+      {
+        name: "9° semestre",
+        courses: [
+          { id: "tecnicas-quirurgicas", name: "Técnicas quirúrgicas", prereq: ["cirugia-general"] },
+          { id: "imagenologia", name: "Imagenología", prereq: ["medicina-interna"] },
+          { id: "clinica-animales-mayores", name: "Clínica de animales mayores", prereq: ["medicina-interna"] },
+          { id: "economia-administracion-vet", name: "Economía y administración de empresas veterinarias", prereq: [] },
+          { id: "clinica-animales-menores", name: "Clínica de animales menores", prereq: ["medicina-interna"] },
+          { id: "electivo-especialidad-i", name: "Electivo de especialidad I", prereq: [] },
+        ],
+      },
+      {
+        name: "10° semestre",
+        courses: [
+          { id: "mod-integrador-profesional", name: "Módulo integrador profesional", prereq: ["clinica-animales-mayores", "clinica-animales-menores"] },
+          { id: "evaluacion-proyectos", name: "Evaluación de proyectos", prereq: ["economia-administracion-vet"] },
+          { id: "salud-laboral-legislacion", name: "Salud laboral y legislación veterinaria", prereq: [] },
+          { id: "electivo-especialidad-ii", name: "Electivo de especialidad II", prereq: [] },
+        ],
+      },
+    ],
+  },
+];
+
+/* ---------- Render dinámico del plan ---------- */
+
+const grid = document.getElementById("grid");
+const yearTpl = document.getElementById("yearTemplate");
+const courseTpl = document.getElementById("courseTemplate");
+
+/** Lee aprobados guardados */
+function loadApproved() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+/** Guarda aprobados */
+function saveApproved(list) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+}
+
+let approved = loadApproved(); // array de IDs aprobadas
+const nodeIndex = new Map();   // id -> button node
+const prereqIndex = new Map(); // id -> array prereqs
+const reverseIndex = new Map();// id -> cursos que dependen de id
+
+function addReverseDependency(courseId, deps){
+  deps.forEach(d => {
+    const list = reverseIndex.get(d) || [];
+    if(!list.includes(courseId)) list.push(courseId);
+    reverseIndex.set(d, list);
+  });
+}
+
+/** Crea la UI */
+function render() {
+  PLAN.forEach(block => {
+    const y = yearTpl.content.cloneNode(true);
+    y.querySelector(".year-title").textContent = block.year;
+
+    const [s1, s2] = y.querySelectorAll(".semester");
+    s1.querySelector("h3").textContent = block.semesters[0].name;
+    s2.querySelector("h3").textContent = block.semesters[1].name;
+
+    [0,1].forEach(idx => {
+      const container = idx === 0 ? s1.querySelector(".courses") : s2.querySelector(".courses");
+      block.semesters[idx].courses.forEach(c => {
+        prereqIndex.set(c.id, c.prereq || []);
+        addReverseDependency(c.id, c.prereq || []);
+
+        const n = courseTpl.content.cloneNode(true).firstElementChild;
+        n.dataset.id = c.id;
+        n.innerHTML = `<strong>${c.name}</strong>` + (c.prereq?.length ? `<small>Req: ${c.prereq.map(x=>shortName(x)).join(", ")}</small>` : `<small>Sin requisitos</small>`);
+        container.appendChild(n);
+        nodeIndex.set(c.id, n);
+      });
+    });
+
+    grid.appendChild(y);
+  });
+
+  // Estado inicial según requisitos y aprobados
+  updateAllStates();
+}
+
+/** Convierte id a nombre corto mostrado en tooltip/req */
+function shortName(id){
+  const n = id.replace(/-/g," ");
+  return n.charAt(0).toUpperCase() + n.slice(1);
+}
+
+/** ¿Curso desbloqueado (tiene todos los prereqs aprobados)? */
+function isUnlocked(id){
+  const reqs = prereqIndex.get(id) || [];
+  return reqs.every(r => approved.includes(r));
+}
+
+/** Pinta estados de todos los nodos y bloquea/desbloquea */
+function updateAllStates(){
+  for (const [id, btn] of nodeIndex.entries()){
+    btn.classList.remove("approved","locked");
+    btn.disabled = false;
+    btn.setAttribute("aria-pressed", approved.includes(id) ? "true" : "false");
+
+    if (approved.includes(id)){
+      btn.classList.add("approved");
+      btn.title = "Aprobada";
+    } else if (!isUnlocked(id)){
+      btn.classList.add("locked");
+      btn.disabled = true;
+      const faltantes = (prereqIndex.get(id) || []).filter(r => !approved.includes(r));
+      btn.title = `Bloqueado. Falta: ${faltantes.map(shortName).join(", ")}`;
+    } else {
+      btn.title = "Disponible";
+    }
+  }
+}
+
+/** Al hacer clic: alterna aprobado/no y actualiza dependencias */
+function onCourseClick(ev){
+  const btn = ev.target.closest(".course");
+  if (!btn) return;
+  if (btn.classList.contains("locked")) return;
+
+  const id = btn.dataset.id;
+  if (approved.includes(id)){
+    // Al desmarcar, también debe volver a bloquear todo lo que dependa de este curso (en cascada)
+    approved = approved.filter(x => x !== id);
+    cascadeLockFrom(id);
+  } else {
+    approved.push(id);
+  }
+  saveApproved(approved);
+  updateAllStates();
+}
+
+/** Bloquea en cascada: elimina de aprobados todo lo que dependa (directa o indirectamente) del id */
+function cascadeLockFrom(id, visited = new Set()){
+  if (visited.has(id)) return;
+  visited.add(id);
+  const dependents = reverseIndex.get(id) || [];
+  for(const depId of nodeIndex.keys()){
+    const reqs = prereqIndex.get(depId) || [];
+    if (reqs.includes(id)){
+      // Si este dependiente estaba aprobado, lo quitamos y seguimos cascada
+      if (approved.includes(depId)){
+        approved = approved.filter(x => x !== depId);
+        cascadeLockFrom(depId, visited);
+      }
+    }
+  }
+}
+
+/** Reinicia todo */
+function resetAll(){
+  approved = [];
+  saveApproved(approved);
+  updateAllStates();
+}
+
+/* ---------- Bootstrap ---------- */
+render();
+grid.addEventListener("click", onCourseClick);
+document.getElementById("btnReset").addEventListener("click", () => {
+  if (confirm("¿Seguro que deseas borrar todo tu progreso?")) resetAll();
+});
