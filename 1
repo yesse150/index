@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MEDICINA VETERINARIA UDALBA</title>
+  <link rel="stylesheet" href="estilos.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>MEDICINA VETERINARIA UDALBA</h1>
+    <div class="actions">
+      <button id="btnReset" title="Borrar todo el progreso">Reiniciar progreso</button>
+    </div>
+  </header>
+
+  <main id="grid"></main>
+
+  <template id="yearTemplate">
+    <section class="year">
+      <h2 class="year-title"></h2>
+      <div class="semesters">
+        <div class="semester">
+          <h3></h3>
+          <div class="courses"></div>
+        </div>
+        <div class="semester">
+          <h3></h3>
+          <div class="courses"></div>
+        </div>
+      </div>
+    </section>
+  </template>
+
+  <template id="courseTemplate">
+    <button class="course" type="button" aria-pressed="false"></button>
+  </template>
+
+  <footer class="footer">
+    <p>Tip: pasa el cursor por un ramo bloqueado para ver qué requisito(s) le faltan.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
