@@ -1,0 +1,121 @@
+:root{
+  --title:#b097cf;              /* Morado título */
+  --course:#ffc4cd;             /* Rosa bloques */
+  --approved:#cbdaa1;           /* Verde aprobadas */
+  --year-bg:#f5f5dc;            /* Amarillo claro por año */
+  --locked:#e6e6e6;             /* Gris claro para bloqueadas */
+  --text:#222;
+  --muted:#666;
+  --radius:16px;
+  --gap:14px;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Helvetica,Arial,sans-serif;
+  color:var(--text);
+  background:#fff;
+}
+
+.topbar{
+  position:sticky; top:0; z-index:10;
+  background:#fff; border-bottom:1px solid #eee;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; padding:14px 18px;
+}
+.topbar h1{
+  margin:0; font-size:clamp(18px,4vw,28px); color:var(--title); font-weight:800;
+  letter-spacing:.3px;
+}
+.actions button{
+  border:1px solid #ddd; background:#fff; color:#333; padding:10px 14px;
+  border-radius:12px; cursor:pointer; transition:.15s transform ease,.15s background ease;
+}
+.actions button:hover{ background:#fafafa; transform:translateY(-1px) }
+
+#grid{
+  width:min(1200px,92vw);
+  margin:24px auto 80px;
+  display:flex; flex-direction:column; gap:20px;
+}
+
+.year{
+  background:var(--year-bg);
+  padding:16px;
+  border-radius:var(--radius);
+  box-shadow:0 2px 10px rgba(0,0,0,.06);
+  border:1px solid #eee;
+}
+.year-title{
+  margin:0 0 12px 0;
+  color:var(--title);
+  font-size:clamp(18px,3vw,24px);
+}
+.semesters{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:var(--gap);
+}
+.semester h3{
+  margin:0 0 8px 0; color:#4a3f5b; font-size:clamp(14px,2.3vw,18px);
+}
+.courses{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+  gap:var(--gap);
+}
+
+.course{
+  text-align:left;
+  border:none;
+  padding:12px 14px;
+  border-radius:var(--radius);
+  background:var(--course);
+  color:#2b2b2b;
+  box-shadow:0 2px 6px rgba(0,0,0,.08);
+  cursor:pointer;
+  transition:transform .12s ease, box-shadow .12s ease, background .12s ease, opacity .12s ease;
+  position:relative;
+  min-height:56px;
+}
+.course:hover{ transform:translateY(-1px); box-shadow:0 4px 10px rgba(0,0,0,.12) }
+.course small{
+  display:block; margin-top:6px; font-size:12px; color:var(--muted);
+}
+
+/* Aprobada */
+.course.approved{
+  background:var(--approved);
+}
+
+/* Bloqueada */
+.course.locked{
+  background:var(--locked);
+  cursor:not-allowed;
+  opacity:.8;
+}
+.course.locked:hover{ transform:none; box-shadow:0 2px 6px rgba(0,0,0,.08) }
+
+/* Etiqueta “Bloqueado” */
+.course.locked::after{
+  content:"Bloqueado";
+  position:absolute; top:8px; right:10px;
+  font-size:11px; background:#fff; border:1px solid #d9d9d9; border-radius:8px;
+  padding:2px 6px; color:#555;
+}
+
+/* Tooltip simple usando title (estilo accesible por defecto del navegador) */
+
+/* Footer */
+.footer{
+  width:min(1000px,92vw); margin:28px auto 40px; color:var(--muted); font-size:14px;
+  text-align:center;
+}
+
+/* Responsivo */
+@media (max-width:800px){
+  .semesters{ grid-template-columns: 1fr }
+  .courses{ grid-template-columns: 1fr }
+}
